@@ -48,7 +48,7 @@ def recent_post(insta_username):
 # function for like the post of ypur user added
 def like_post(insta_username):
     post_id=recent_post(insta_username)
-    print post_id
+    #print post_id
     payload={"access_token":Access_Token}
     request_url=base_url+ "/media/" + post_id + "/likes"
     response_to_like=requests.post(request_url,payload).json()
@@ -105,7 +105,19 @@ def comment_del(insta_username):
         print("Some error occurred! Try Again.")
         print comments
 
-
+def search_in_comment(username):
+     word_to_be_searched = raw_input("Enter the word you want to search in comments of most popular post : ")
+     post_id = recent_post(username)
+     print(post_id)
+     url = base_url + "/media/" + str(post_id) + "/comments/?access_token=" + Access_Token
+     print(url)
+     payload = requests.get(url).json()
+     print(payload)
+     list_of_comments = []
+     for comment in payload['data']:
+         list_of_comments.append(comment['text'])
+     print(list_of_comments)
+search_in_comment("gobind.gobind")
 
 
 # conditions and added users in the sandbox
