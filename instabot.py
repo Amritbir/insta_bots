@@ -1,10 +1,14 @@
                 #INSTABOTS#
 
-#import libraries
+# Imports requests library for handling HTTP requests.
 import requests
 
-Access_Token="2338013941.3fe8729.65d7a6c1f3f84fdbb2e2ac56150b5934"      #self generated token from instagram/develeper
-base_url="https://api.instagram.com/v1"             #common url
+
+# Access Token generated from Instabot servers.
+Access_Token="2338013941.3fe8729.65d7a6c1f3f84fdbb2e2ac56150b5934"
+
+# Base URL for every URL used in the file.
+base_url="https://api.instagram.com/v1"
 
 
 # information of owner #
@@ -15,6 +19,9 @@ def self_info():
     print" my user_name is :" + my_info['data']['full_name']
     #print my_info['data']['id']
     print "my profile picture is :" + my_info['data']['profile_picture']
+    print("Media Shared            : ", my_info['data']['counts']['media'])
+    print("Followed By             : ", my_info['data']['counts']['followed_by'])
+    print("Followers               : ", my_info['data']['counts']['follows'])
 
 self_info()
 #https://api.instagram.com/v1/users/search?q=jack&access_token=ACCESS-TOKEN
@@ -22,12 +29,22 @@ self_info()
 
 #information of other users
 def insta_users_search(user_name):
-    url_user = base_url + "/users/search?q==" + user_name + "&access_token=" + Access_Token
-    user_info = requests.get(url_user).json()
-    #print user_info
-    print"the insta_username is :" + user_info['data'][0]['full_name']
-    #print user_info['data'][0]['id']
-    return user_info['data'][0]['id']
+     # get user id
+    if user_name not in ['gobind.gobind', 'just_rawat']:
+         print"you enter wrong wrong username"
+         return
+    else:
+            url_user = base_url + "/users/search?q=" + user_name + "&access_token=" + Access_Token  # https://api.instagram.com/v1/users/search?q=jack&access_token=ACCESS-TOKEN
+            user_info = requests.get(url_user).json()
+            sucess = user_info["meta"]["code"]
+            if sucess == 200:  # checking url
+                print "successsfully found user id "
+                print"the insta_username is :" + user_info['data'][0]['full_name']
+            else:
+                print "unsucsessfull plz try again"
+            return user_info["data"][0]["id"]
+
+            # returning user id
     #print user_info['data'][0]['profile_picture']
 #insta_users_search(user_name="gobind.gobind")
 
@@ -117,31 +134,99 @@ def search_in_comment(username):
      for comment in payload['data']:
          list_of_comments.append(comment['text'])
      print(list_of_comments)
-search_in_comment("gobind.gobind")
 
 
-# conditions and added users in the sandbox
-print "Select usernames from the following:"
-print("1. Gobind.")
-print("2. Desmon(kundan).")
-choice=input("enter your choice(1 or 2)")
-if choice not in ['1', '2']:
-    # while choice not in ['1', '2']:
-    print("You entered the wrong choice. Please choose from given options.")
-    choice = input("Enter your choice (1 or 2) : ")
-if int(choice)==1:
-        #insta_users_search(user_name="gobind.gobind")
-        comment_del(insta_username="gobind.gobind")
-        like_post(insta_username="gobind.gobind")
-elif int(choice)==2:
-         #insta_users_search(user_name="just_rawat")
-         comment_del(insta_username="just_rwawat")
-         like_post(insta_username="just_rawat")
-
-else:
-        print "error"
+# Function to find Average Number of Words per Comment.
+def find_average_words_per_comment(post_id):
+    url = base_url + "/media/" + str(post_id) + "/comments/?access_token=" + Access_Token
+    data = requests.get(url).json()
+    if len(data['data']) == 0:
+        print("There are no comments on this post...")
+    else:
+        list_of_comments = []
+        total_no_of_words = 0
+        comments_id = []
+        for comment in data['data']:
+            list_of_comments.append(comment['text'])
+            total_no_of_words += len(comment['text'].split())
+            comments_id.append(comment['id'])
+        average_words = float(total_no_of_words)/len(list_of_comments)
+        print("\nAverage no. of words per comment in most interesting post = %.2f" % average_words)
 
 
+#calling of average function
+def average_words_per_comment(username):
+    user_id = insta_users_search(username)
+    if user_id:
+        if recent_post(username):
+            post_id, post_link =recent_post(username)
+            find_average_words_per_comment(post_id)
+
+
+
+
+
+
+
+
+# Menu for the User to interact with the Instabot.
+
+print("\nHello User! Welcome to the Instabot Environment.")
+choice = 1
+while choice != '9':
+    print("\nWhat do you want to do using the bot?")
+    print("1. Get the Details of the owner.")
+    print("2. Get the username of the  Insta_User.")
+    print("3. Get the recent post of the User.")
+    print("4. Like a post of the User.")
+    print("5. Comment on post of the User.")
+    print("6. Delete the comment containing a particular word.")
+    print("7. Get the average no. of words per comment in most insteresting post.")
+    print("8. Exit.\n\n")
+
+    choice = input("Enter Your Choice(1-9) : ")
+
+    user_name = raw_input("enter users from the following  1.gobind.gobind and 2. just_rawat")
+
+    # Perform Actions Depending on the User's Choice. Runs Until User wishes to Exit.
+    #if choice in ['1', '2', '3', '4', '5', '6', '7', '8']:
+    if int(choice) == 1:
+        self_info()
+
+    elif int(choice) == 2:
+        insta_users_search(user_name)
+
+    elif int(choice) == 3:
+        recent_post(user_name)
+
+
+    elif int(choice) == 4:
+        like_post(user_name)
+
+    elif int(choice) == 5:
+        post_comment(user_name)
+
+    elif int(choice) == 7:
+        comment_del(user_name)
+
+    elif int(choice) == 8:
+        average_words_per_comment(user_name)
+    print("\nWant to do more using Instabot?")
+    ch = 'P'
+    flag = 0
+    while ch not in ['Y', 'N']:
+        if flag != 0:
+            print("Wrong Choice Entered. Try Again...")
+        ch = input("\nEnter your choice (Y/N) :").upper()
+        flag = 1
+        if ch == 'N':
+            break
+    if ch == 'N':
+        break
+    elif choice == 8:
+        pass
+    else:
+        print("\nWrong choice entered.... Try Again.")
 
 
 
